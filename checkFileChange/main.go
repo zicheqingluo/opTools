@@ -10,10 +10,26 @@ import (
 	"log"
 	"io/ioutil"
 	"flag"
-	//"runtime"
+	"path/filepath"
 )
+
+var execDir,dataCache string
 var fileMap map[string]string
 var checkFlag bool
+
+func getDir(){
+	ex, err := os.Executable()
+    if err != nil {
+        panic(err)
+	}
+	cwdPath := filepath.Dir(ex)
+	
+	flag.StringVar(&execDir, "dir", "/home/homework/coresave", "目标目录")
+	flag.Parse()
+	name:=path.Clean(execDir)
+	_,name=path.Split(name)
+	dataCache=fmt.Sprintf("%s/.%s",cwdPath,name)
+}
 
 func getInode(execDir string) map[string]string{
 	cmd := exec.Command("ls","-i",execDir)
@@ -79,6 +95,7 @@ func fileSave(f map[string]string,dataCache string){
 
 }
 
+
 func main(){
 	//1、通过flag动态获取要检测的目录
 	//2、生成该目录的inode 和文件名的对应关系，序列化为json
@@ -89,20 +106,8 @@ func main(){
 	//4、将对应关系持久化到本地
 	//5、返回是否有变化
 	//_, filename, _, ok := runtime.Caller(0)
-	cwdPath,err:=os.Getwd()
-	if err !=nil {
-		
-		return
-	}
-	var execDir string
-	flag.StringVar(&execDir, "dir", "/home/yxk/test", "目标目录")
-	flag.Parse()
-	name:=path.Clean(execDir)
-	_,name=path.Split(name)
-	//_,name:=path.Split(execDir)
-	fmt.Println("mulu:",name)
-	dataCache:=fmt.Sprintf("%s/.%s",cwdPath,name)
-	fmt.Println(dataCache)
+
+	getDir()
 
 	fileMap:=getInode(execDir)
 	diffChanges(fileMap,dataCache)
