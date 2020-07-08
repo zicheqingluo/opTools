@@ -2,6 +2,7 @@ package main
 import (
 	"encoding/json"
 	"os/exec"
+	"os"
 	"path"
 	"fmt"
 	"strings"
@@ -9,7 +10,7 @@ import (
 	"log"
 	"io/ioutil"
 	"flag"
-	"runtime"
+	//"runtime"
 )
 var fileMap map[string]string
 var checkFlag bool
@@ -87,18 +88,21 @@ func main(){
 		//4.3 遍历上一次记录与本次做对比，看是否有文件删除
 	//4、将对应关系持久化到本地
 	//5、返回是否有变化
-	var cwdPath string
-	_, filename, _, ok := runtime.Caller(0)
-	if ok {
-		cwdPath = path.Join(path.Dir(filename), "")
-	} else {
+	//_, filename, _, ok := runtime.Caller(0)
+	cwdPath,err:=os.Getwd()
+	if err !=nil {
+		
 		return
 	}
 	var execDir string
 	flag.StringVar(&execDir, "dir", "/home/yxk/test", "目标目录")
 	flag.Parse()
-	_,name:=path.Split(execDir)
+	name:=path.Clean(execDir)
+	_,name=path.Split(name)
+	//_,name:=path.Split(execDir)
+	fmt.Println("mulu:",name)
 	dataCache:=fmt.Sprintf("%s/.%s",cwdPath,name)
+	fmt.Println(dataCache)
 
 	fileMap:=getInode(execDir)
 	diffChanges(fileMap,dataCache)
