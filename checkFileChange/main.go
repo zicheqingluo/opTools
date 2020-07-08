@@ -2,12 +2,14 @@ package main
 import (
 	"encoding/json"
 	"os/exec"
+	"path"
 	"fmt"
 	"strings"
 	"bytes"
 	"log"
 	"io/ioutil"
 	"flag"
+	"runtime"
 )
 var fileMap map[string]string
 var checkFlag bool
@@ -20,25 +22,25 @@ func getInode(execDir string) map[string]string{
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	outStr:=out.String()
 	fileMap=make(map[string]string)
 	for _,line := range strings.Split(outStr,"\n"){
 		if len(line) >0 {
-
-			s := strings.Split(line," ")
+			l:= strings.TrimSpace(line)
+			s:= strings.Split(l," ")
+			//fmt.Println(s)
 			fileMap[s[0]]=s[1]
 		}
-		
 	}
 	//fmt.Println(fileMap)
 	return fileMap
 }
 
-func diffChanges(f map[string]string){
-	content, err := ioutil.ReadFile("./fdata")
+func diffChanges(f map[string]string,dataCache string){
+	content, err := ioutil.ReadFile(dataCache)
 	if err != nil {
-		fmt.Println("read file failed, err:", err)
+		//fmt.Println("read file failed, err:", err)
 		return
 	}
 	var fj	map[string]string 
@@ -62,13 +64,13 @@ func diffChanges(f map[string]string){
 	// }
 }
 
-func fileSave(f map[string]string){
+func fileSave(f map[string]string,dataCache string){
 	fj,err := json.Marshal(f)
 	if err != nil {
 		fmt.Printf("inode marshal fail:%v",err)
 		return 
 	}
-	err = ioutil.WriteFile("./fdata", fj, 0644)
+	err = ioutil.WriteFile(dataCache, fj, 0644)
 	if err != nil {
 		fmt.Println("write file failed, err:", err)
 		return
@@ -85,14 +87,25 @@ func main(){
 		//4.3 遍历上一次记录与本次做对比，看是否有文件删除
 	//4、将对应关系持久化到本地
 	//5、返回是否有变化
+	var cwdPath string
+	_, filename, _, ok := runtime.Caller(0)
+	if ok {
+		cwdPath = path.Join(path.Dir(filename), "")
+	} else {
+		return
+	}
 	var execDir string
 	flag.StringVar(&execDir, "dir", "/home/yxk/test", "目标目录")
 	flag.Parse()
+	_,name:=path.Split(execDir)
+	dataCache:=fmt.Sprintf("%s/.%s",cwdPath,name)
 
 	fileMap:=getInode(execDir)
-	diffChanges(fileMap)
-	fileSave(fileMap)
+	diffChanges(fileMap,dataCache)
+	fileSave(fileMap,dataCache)
 	if checkFlag{
-		fmt.Printf("coredump:0")
+		fmt.Println("coredump:0")
+	} else {
+		fmt.Println("coredump:1")
 	}
 }
