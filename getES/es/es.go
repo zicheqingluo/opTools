@@ -2,10 +2,15 @@ package es
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/olivere/elastic/v7"
 	"log"
+	"opTools/getES/modle"
+	"opTools/getES/service"
 	"os"
+	"time"
+
+	"github.com/olivere/elastic/v7"
 )
 
 var client *elastic.Client
@@ -29,16 +34,30 @@ func ESInit() {
 	}
 	fmt.Printf("%s ES version %s\n", host, esVersion)
 
+	getPullFromES()
+
 }
 
-func getPullFromES() {
+func getPullFromES(index string, st, et int64) int64 {
 	pullObj := elastic.NewBoolQuery()
-	pullObj.Must(elastic.NewMatchQuery("cur_pull_stream_num_online"))
-	pullObj.Filter(elastic.NewRangeQuery("ts").Gt(1598959320).Lte(1598959380))
-	res, err := client.Search("zrtclive_info_202009").Query(pullObj).Do(context.Background())
+	pullObj.Filter(elastic.NewRangeQuery("ts").Gt(st).Lt(et))
+	//pullObj.Filter(elastic.NewRangeQuery("ts").Gt(1599031879))
+	res, err := client.Search(index).Query(pullObj).Size(500).Do(context.Background())
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("getpullfromes", err)
 	}
-	fmt.Println(res)
+	totalHits := res.Hits.TotalHits.Value
+	fmt.Println("总数：", res.Hits.TotalHits.Value)
+	fmt.Println("hist:", len(res.Hits.Hits))
+	for _, value := range res.Hits.Hits {
+
+		var doc *modle.Zrtclive
+		json.Unmarshal(value.Source, &doc)
+		//fmt.Printf("long:%t", doc.TS)
+		service.PullChan <- doc
+		fmt.Println(doc)
+
+	}
+	return totalHits
 
 }
