@@ -38,13 +38,14 @@ func ESInit() {
 
 }
 
-func getPullFromES(index string, st, et int64) int64 {
+func getPullFromES(index string, st, et int64) (int64, error) {
 	pullObj := elastic.NewBoolQuery()
 	pullObj.Filter(elastic.NewRangeQuery("ts").Gt(st).Lt(et))
 	//pullObj.Filter(elastic.NewRangeQuery("ts").Gt(1599031879))
 	res, err := client.Search(index).Query(pullObj).Size(500).Do(context.Background())
 	if err != nil {
 		fmt.Println("getpullfromes", err)
+		return 0, err
 	}
 	totalHits := res.Hits.TotalHits.Value
 	fmt.Println("总数：", res.Hits.TotalHits.Value)
@@ -58,6 +59,26 @@ func getPullFromES(index string, st, et int64) int64 {
 		fmt.Println(doc)
 
 	}
-	return totalHits
+	return totalHits, nil
 
+}
+
+func run() {
+
+	for {
+
+		select {
+		case t := <-service.EsChan:
+			totalHits, err := getPullFromES(t.Index, t.StartTime, t.EndTime)
+			if err != nil {
+				fmt.Printf("获取es数据失败：%v", err)
+			}
+			if totalHits > 500 {
+
+				fmt.Println("数据大于500")
+			}
+
+		default:
+		}
+	}
 }

@@ -20,7 +20,7 @@ type Zrtclive struct {
 }
 
 type EsTask struct {
-	index     string
+	Index     string
 	StartTime int64
 	EndTime   int64
 }
