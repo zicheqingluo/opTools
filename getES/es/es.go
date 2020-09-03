@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"opTools/getES/modle"
+	"opTools/getES/model"
 	"opTools/getES/service"
 	"os"
-	"time"
 
 	"github.com/olivere/elastic/v7"
 )
@@ -34,11 +33,11 @@ func ESInit() {
 	}
 	fmt.Printf("%s ES version %s\n", host, esVersion)
 
-	getPullFromES()
-
 }
 
 func getPullFromES(index string, st, et int64) (int64, error) {
+	pullList := []*modle.Zrtclive{}
+
 	pullObj := elastic.NewBoolQuery()
 	pullObj.Filter(elastic.NewRangeQuery("ts").Gt(st).Lt(et))
 	//pullObj.Filter(elastic.NewRangeQuery("ts").Gt(1599031879))
@@ -47,6 +46,7 @@ func getPullFromES(index string, st, et int64) (int64, error) {
 		fmt.Println("getpullfromes", err)
 		return 0, err
 	}
+	fmt.Println("开始时间：", st, "结束时间：", et)
 	totalHits := res.Hits.TotalHits.Value
 	fmt.Println("总数：", res.Hits.TotalHits.Value)
 	fmt.Println("hist:", len(res.Hits.Hits))
@@ -55,15 +55,16 @@ func getPullFromES(index string, st, et int64) (int64, error) {
 		var doc *modle.Zrtclive
 		json.Unmarshal(value.Source, &doc)
 		//fmt.Printf("long:%t", doc.TS)
-		service.PullChan <- doc
-		fmt.Println(doc)
+		pullList = append(pullList, doc)
+		//fmt.Println(doc.Localip)
 
 	}
+	service.PullChan <- pullList
 	return totalHits, nil
 
 }
 
-func run() {
+func Run() {
 
 	for {
 
