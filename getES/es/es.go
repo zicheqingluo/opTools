@@ -8,6 +8,7 @@ import (
 	"opTools/getES/model"
 	"opTools/getES/service"
 	"os"
+	"time"
 
 	"github.com/olivere/elastic/v7"
 )
@@ -59,6 +60,7 @@ func getPullFromES(index string, st, et int64) (int64, error) {
 		//fmt.Println(doc.Localip)
 
 	}
+	time.Sleep(time.Second * 5)
 	service.PullChan <- pullList
 	return totalHits, nil
 
@@ -70,6 +72,7 @@ func Run() {
 
 		select {
 		case t := <-service.EsChan:
+			fmt.Println("es.run:channel has key")
 			totalHits, err := getPullFromES(t.Index, t.StartTime, t.EndTime)
 			if err != nil {
 				fmt.Printf("获取es数据失败：%v", err)
@@ -78,8 +81,9 @@ func Run() {
 
 				fmt.Println("数据大于500")
 			}
+			//default:
+			//	time.Sleep(time.Second * 10)
 
-		default:
 		}
 	}
 }

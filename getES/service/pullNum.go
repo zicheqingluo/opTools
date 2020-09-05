@@ -23,6 +23,7 @@ func MakeTask() {
 			EndTime:   time.Now().Unix(),
 		}
 		EsChan <- t
+		fmt.Printf("maketask:put key to chan %v", EsChan)
 		time.Sleep(time.Second * 60)
 	}
 
@@ -122,7 +123,6 @@ func ListenPullChan() {
 			fmt.Println(time.Now())
 			makeData(d)
 
-		default:
 		}
 	}
 }
