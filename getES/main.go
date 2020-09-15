@@ -1,21 +1,31 @@
 package main
 
 import (
-	"fmt"
+	"github.com/google/gops/agent"
+	//"go.uber.org/zap"
 	"opTools/getES/es"
 	"opTools/getES/service"
+	zlog "opTools/getES/zaplog"
 	"time"
 )
 
 func main() {
+	zlog.InitLog("./logs/info.log", "./logs/error.log", "info")
+	if err := agent.Listen(agent.Options{Addr: "0.0.0.0:8000"}); err != nil {
+
+		zlog.Warn("gops初始化失败:%s", err)
+	}
+	zlog.Info("gops运行")
+	//logger.AtomicLevel.SetLevel(zap.InfoLevel)
+	//logger.Logger.Debug("启动。。")
 	es.ESInit()
-	fmt.Println("启动maketask")
+	zlog.Debug("ES init ...")
 	go service.MakeTask()
 	time.Sleep(time.Second * 2)
-	fmt.Println("启动 es.run")
+	zlog.Debug("make task ...")
 	go es.Run()
 	//	time.Sleep(time.Second * 200)
-	fmt.Println("启动listenpullchan")
+	zlog.Debug("es.Run listenPullChan ...")
 	service.ListenPullChan()
 
 }

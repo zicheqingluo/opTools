@@ -5,6 +5,7 @@ import (
 	odins "common/service"
 	"fmt"
 	"opTools/getES/model"
+	zlog "opTools/getES/zaplog"
 	"strings"
 	"time"
 )
@@ -19,11 +20,11 @@ func MakeTask() {
 		now := time.Now()
 		t := modle.EsTask{
 			Index:     fmt.Sprintf("zrtclive_info_%v", now.Format("200601")),
-			StartTime: time.Now().Unix() - 60,
-			EndTime:   time.Now().Unix(),
+			StartTime: now.Unix() - 60,
+			EndTime:   now.Unix(),
 		}
 		EsChan <- t
-		fmt.Printf("maketask:put key to chan %v", EsChan)
+		zlog.Info("生成任务:%s", now.Format("200601"))
 		time.Sleep(time.Second * 60)
 	}
 
@@ -52,7 +53,7 @@ func makeData(data []*modle.Zrtclive) {
 			bdgz[value.Localip] = value.PullNum
 
 		default:
-			fmt.Printf("%s 未找到所属机房\n", value.Localip)
+			zlog.Warn("%s 未找到所属机房", value.Localip)
 		}
 
 	}
@@ -68,10 +69,10 @@ func makeData(data []*modle.Zrtclive) {
 	for _, num := range bdwh {
 		bdwhSum += num
 	}
-	fmt.Println("bdbj: ", bdbj)
-	fmt.Println("bdsz: ", bdsz)
-	fmt.Println("bdgz: ", bdgz)
-	fmt.Println("bdwh: ", bdwh)
+	zlog.Info("bdbj: %v", bdbj)
+	zlog.Info("bdsz: %v", bdsz)
+	zlog.Info("bdgz: %v", bdgz)
+	zlog.Info("bdwh: %v", bdwh)
 	odinbdbj := odinm.FalconItem{
 		Endpoint:    "rdqa-rd-test666.bjdd.zybang.com",
 		Metric:      "bdbjpullnum",
@@ -112,7 +113,7 @@ func makeData(data []*modle.Zrtclive) {
 	itemList = append(itemList, odinbdwh, odinbdgz, odinbdbj, odinbdsz)
 	err := odins.UpdateOdin(itemList)
 	if err != nil {
-		fmt.Println("上传odin失败：", err)
+		zlog.Error("上传odin失败：", err)
 	}
 }
 
@@ -120,7 +121,7 @@ func ListenPullChan() {
 	for {
 		select {
 		case d := <-PullChan:
-			fmt.Println(time.Now())
+			zlog.Info("处理数据")
 			makeData(d)
 
 		}
