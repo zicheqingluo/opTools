@@ -1,7 +1,0 @@
-{"level":"WARN","ts":"2020-09-15 23:37:43","linenum":"service/pullNum.go:56","msg":"172.24.16.10 未找到所属机房\n","stacktrace":"opTools/getES/service.makeData\n\t/home/homework/projects/go/src/opTools/getES/service/pullNum.go:56\nopTools/getES/service.ListenPullChan\n\t/home/homework/projects/go/src/opTools/getES/service/pullNum.go:125\nmain.main\n\t/home/homework/projects/go/src/opTools/getES/main.go:29\nruntime.main\n\t/mnt/homework/soft/go/src/runtime/proc.go:204"}
-{"level":"WARN","ts":"2020-09-15 23:37:43","linenum":"service/pullNum.go:56","msg":"172.24.16.10 未找到所属机房\n","stacktrace":"opTools/getES/service.makeData\n\t/home/homework/projects/go/src/opTools/getES/service/pullNum.go:56\nopTools/getES/service.ListenPullChan\n\t/home/homework/projects/go/src/opTools/getES/service/pullNum.go:125\nmain.main\n\t/home/homework/projects/go/src/opTools/getES/main.go:29\nruntime.main\n\t/mnt/homework/soft/go/src/runtime/proc.go:204"}
-{"level":"WARN","ts":"2020-09-15 23:49:12","linenum":"service/pullNum.go:56","msg":"172.24.16.10 未找到所属机房"}
-{"level":"WARN","ts":"2020-09-15 23:49:12","linenum":"service/pullNum.go:56","msg":"172.24.16.10 未找到所属机房"}
-{"level":"WARN","ts":"2020-09-15 23:59:38","linenum":"getES/main.go:16","msg":"gops初始化失败:listen tcp 0.0.0.0:8000: bind: address already in use"}
-{"level":"WARN","ts":"2020-09-15 23:59:40","linenum":"service/pullNum.go:56","msg":"172.24.16.10 未找到所属机房"}
-{"level":"WARN","ts":"2020-09-15 23:59:40","linenum":"service/pullNum.go:56","msg":"172.24.16.10 未找到所属机房"}

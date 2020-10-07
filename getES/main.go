@@ -3,14 +3,14 @@ package main
 import (
 	"github.com/google/gops/agent"
 	//"go.uber.org/zap"
+	zlog "common/zaplog"
 	"opTools/getES/es"
 	"opTools/getES/service"
-	zlog "opTools/getES/zaplog"
 	"time"
 )
 
 func main() {
-	zlog.InitLog("./logs/info.log", "./logs/error.log", "info")
+	zlog.InitLog("./logs/getES.info.log", "./logs/getES.error.log", "info")
 	if err := agent.Listen(agent.Options{Addr: "0.0.0.0:8000"}); err != nil {
 
 		zlog.Warn("gops初始化失败:%s", err)

@@ -1,9 +1,0 @@
-{"level":"WARN","ts":"2020-09-16 00:01:05","linenum":"getES/main.go:16","msg":"gops初始化失败:listen tcp 0.0.0.0:8000: bind: address already in use"}
-{"level":"WARN","ts":"2020-09-16 00:01:08","linenum":"service/pullNum.go:56","msg":"172.24.16.10 未找到所属机房"}
-{"level":"WARN","ts":"2020-09-16 00:01:08","linenum":"service/pullNum.go:56","msg":"172.24.16.10 未找到所属机房"}
-{"level":"WARN","ts":"2020-09-16 00:05:03","linenum":"getES/main.go:16","funcName":"main.main","msg":"gops初始化失败:listen tcp 0.0.0.0:8000: bind: address already in use"}
-{"level":"WARN","ts":"2020-09-16 00:05:05","linenum":"service/pullNum.go:56","funcName":"opTools/getES/service.makeData","msg":"172.24.16.10 未找到所属机房"}
-{"level":"WARN","ts":"2020-09-16 00:05:05","linenum":"service/pullNum.go:56","funcName":"opTools/getES/service.makeData","msg":"172.24.16.10 未找到所属机房"}
-{"level":"WARN","ts":"2020-09-16 00:07:56","linenum":"getES/main.go:16","funcName":"main.main","msg":"gops初始化失败:listen tcp 0.0.0.0:8000: bind: address already in use","serviceName":"getES"}
-{"level":"WARN","ts":"2020-09-16 00:07:59","linenum":"service/pullNum.go:56","funcName":"opTools/getES/service.makeData","msg":"172.24.16.10 未找到所属机房","serviceName":"getES"}
-{"level":"WARN","ts":"2020-09-16 00:07:59","linenum":"service/pullNum.go:56","funcName":"opTools/getES/service.makeData","msg":"172.24.16.10 未找到所属机房","serviceName":"getES"}

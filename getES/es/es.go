@@ -1,13 +1,16 @@
 package es
 
 import (
+	zlog "common/zaplog"
 	"context"
 	"encoding/json"
-	"github.com/olivere/elastic/v7"
 	"log"
 	"opTools/getES/model"
 	"opTools/getES/service"
-	zlog "opTools/getES/zaplog"
+	"opTools/getES/util"
+	"time"
+
+	"github.com/olivere/elastic/v7"
 	//"os"
 )
 
@@ -18,15 +21,23 @@ func ESInit() {
 	errorlog := log.New(zlog.WarnWriter, "APP", log.LstdFlags)
 	//errorlog := log.New(os.Stdout, "APP", log.LstdFlags)
 	var err error
-	client, err = elastic.NewClient(elastic.SetErrorLog(errorlog), elastic.SetURL(host))
-	if err != nil {
-		zlog.Error("创建es链接错误:%v", err)
+	for {
+
+		client, err = elastic.NewClient(elastic.SetErrorLog(errorlog), elastic.SetURL(host))
+		if err != nil {
+			zlog.Error("创建es链接错误:%v", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		info, code, err := client.Ping(host).Do(context.Background())
+		if err != nil {
+			zlog.Error("链接es失败：%s", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		zlog.Info("ES %s returned with code %d and version %s\n", host, code, info.Version.Number)
+		break
 	}
-	info, code, err := client.Ping(host).Do(context.Background())
-	if err != nil {
-		zlog.Error("链接es失败：%s", err)
-	}
-	zlog.Info("ES %s returned with code %d and version %s\n", host, code, info.Version.Number)
 	/*
 		esVersion, err := client.ElasticsearchVersion(host)
 		if err != nil {
@@ -73,13 +84,25 @@ func Run() {
 		select {
 		case t := <-service.EsChan:
 			zlog.Info("es.run:channel has key")
-			totalHits, err := getPullFromES(t.Index, t.StartTime, t.EndTime)
+			var totalHits int64
+			var err error
+			task := func(index string, starttime, endtime int64) func() error {
+				return func() error {
+					totalHits, err = getPullFromES(index, starttime, endtime)
+					return err
+
+				}
+			}
+			err = util.Retry(3, 5*time.Second, task(t.Index, t.StartTime, t.EndTime))
 			if err != nil {
 				zlog.Error("获取es数据失败：%v", err)
 			}
 			if totalHits > 500 {
 
-				zlog.Warn("数据大于500")
+				zlog.Warn("数据大于500:%d", totalHits)
+			}
+			if totalHits == 0 {
+				zlog.Warn("es返回数据为空")
 			}
 			//default:
 			//	time.Sleep(time.Second * 10)

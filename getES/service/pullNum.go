@@ -3,9 +3,10 @@ package service
 import (
 	odinm "common/model"
 	odins "common/service"
+	zlog "common/zaplog"
 	"fmt"
 	"opTools/getES/model"
-	zlog "opTools/getES/zaplog"
+	"opTools/getES/util"
 	"strings"
 	"time"
 )
@@ -44,30 +45,22 @@ func makeData(data []*modle.Zrtclive) {
 		switch {
 		case strings.HasPrefix(value.Localip, "192.168"):
 			bdbj[value.Localip] = value.PullNum
+			bdbjSum += value.PullNum
 		case strings.HasPrefix(value.Localip, "10.2"):
 			bdsz[value.Localip] = value.PullNum
+			bdszSum += value.PullNum
 		case strings.HasPrefix(value.Localip, "10.3"):
 			bdwh[value.Localip] = value.PullNum
+			bdwhSum += value.PullNum
 		case strings.HasPrefix(value.Localip, "10.0"):
 			//fmt.Println("广州ip：", value.Localip)
 			bdgz[value.Localip] = value.PullNum
+			bdgzSum += value.PullNum
 
 		default:
 			zlog.Warn("%s 未找到所属机房", value.Localip)
 		}
 
-	}
-	for _, num := range bdgz {
-		bdgzSum += num
-	}
-	for _, num := range bdsz {
-		bdszSum += num
-	}
-	for _, num := range bdbj {
-		bdbjSum += num
-	}
-	for _, num := range bdwh {
-		bdwhSum += num
 	}
 	zlog.Info("bdbj: %v", bdbj)
 	zlog.Info("bdsz: %v", bdsz)
@@ -111,14 +104,21 @@ func makeData(data []*modle.Zrtclive) {
 	}
 	itemList := []odinm.FalconItem{}
 	itemList = append(itemList, odinbdwh, odinbdgz, odinbdbj, odinbdsz)
-	err := odins.UpdateOdin(itemList)
+	upOdin := func(itemList []odinm.FalconItem) func() error {
+		return func() error {
+			err := odins.UpdateOdin(itemList)
+			return err
+		}
+	}
+	err := util.Retry(3, 5*time.Second, upOdin(itemList))
 	if err != nil {
-		zlog.Error("上传odin失败：", err)
+		zlog.Error("上传odin失败：%s", err)
 	}
 }
 
 func ListenPullChan() {
 	for {
+
 		select {
 		case d := <-PullChan:
 			zlog.Info("处理数据")
