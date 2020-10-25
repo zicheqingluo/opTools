@@ -18,12 +18,12 @@ var client *elastic.Client
 var host = "http://192.168.148.191:9601/"
 
 func ESInit() {
-	errorlog := log.New(zlog.WarnWriter, "APP", log.LstdFlags)
+	errorlog := log.New(zlog.WarnWriter, "ElasticSearch", log.LstdFlags)
 	//errorlog := log.New(os.Stdout, "APP", log.LstdFlags)
 	var err error
 	for {
 
-		client, err = elastic.NewClient(elastic.SetErrorLog(errorlog), elastic.SetURL(host))
+		client, err = elastic.NewClient(elastic.SetErrorLog(errorlog), elastic.SetURL(host), elastic.SetHealthcheck(true), elastic.SetHealthcheckInterval(30*time.Second), elastic.SetMaxRetries(2))
 		if err != nil {
 			zlog.Error("创建es链接错误:%v", err)
 			time.Sleep(5 * time.Second)
@@ -52,9 +52,9 @@ func getPullFromES(index string, st, et int64) (int64, error) {
 
 	pullObj := elastic.NewBoolQuery()
 	pullObj.Filter(elastic.NewRangeQuery("ts").Gt(st).Lt(et))
-	//pullObj.Filter(elastic.NewRangeQuery("ts").Gt(1599031879))
+	//pullObj.Filter(elastic.NewRangeQuery("ts").Gt(1602142548).Lt(1602142808))
 	zlog.Info("开始时间：%d- 结束时间：%d", st, et)
-	res, err := client.Search(index).Query(pullObj).Size(500).Do(context.Background())
+	res, err := client.Search(index).Query(pullObj).Size(500).TimeoutInMillis(100).Do(context.Background())
 	if err != nil {
 		zlog.Error("获取%d-%d的数据失败:%s", st, et, err)
 		return 0, err
